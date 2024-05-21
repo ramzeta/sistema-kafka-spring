@@ -44,10 +44,6 @@ logs/
 Thumbs.db
 *.swp
 
-# Docker
-**/Dockerfile
-**/docker-compose.yml
-.dockerignore
 
 # Application specific
 microservice1/target/
