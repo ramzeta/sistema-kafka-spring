@@ -1,21 +1,25 @@
 spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
   application:
     name: microservicio1
+
   r2dbc:
-    url: r2dbc:mysql://database:3306/mydb
+    url: r2dbc:mysql://127.0.0.1:3306/mydb
     username: user
     password: password
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+
+
 
 kafka:
-  bootstrap-servers: kafka:9092
   topic: my_topic
 
 server:
-  port: 8080
+  port: 8088
 
 logging:
   level:

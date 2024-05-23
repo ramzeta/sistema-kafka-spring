@@ -5,6 +5,8 @@ services:
     image: wurstmeister/zookeeper:3.4.6
     ports:
       - "2181:2181"
+    networks:
+      - kafka-net
 
   kafka:
     image: wurstmeister/kafka:2.13-2.7.0
@@ -16,6 +18,8 @@ services:
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
     depends_on:
       - zookeeper
+    networks:
+      - kafka-net
 
   database:
     image: mysql:8.0
@@ -28,25 +32,60 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 10
 
   microservicio1:
     build:
       context: ./microservicio1
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8088:8088"
     depends_on:
-      - kafka
       - database
+      - kafka
+    networks:
+      - kafka-net
 
   microservicio2:
     build:
       context: ./microservicio2
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"
+      - "8089:8089"
+    depends_on:
+      - database
+      - kafka
+    networks:
+      - kafka-net
+
+  akhq:
+    image: tchiotludo/akhq
+    ports:
+      - "8080:8080"
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          server:
+            access-log: true
+          security:
+            default-group: admin
+          connections:
+            kafka:
+              properties:
+                bootstrap.servers: "kafka:9092"
     depends_on:
       - kafka
+      - zookeeper
+    networks:
+      - kafka-net
+
+networks:
+  kafka-net:
 
 volumes:
   db_data:
